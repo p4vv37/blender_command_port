@@ -4,6 +4,7 @@ bl_info = {
                    "www.github.com/p4vv37/blender_command_port",
     "author": "Pawel Kowalski",
     "version": (1, 0, 0),
+    "blender": (2, 80, 0),
     "location": "Properties > Data > Blender Command Port",
     "support": "COMMUNITY",
     "wiki_url": "www.github.com/p4vv37/blender_command_port",

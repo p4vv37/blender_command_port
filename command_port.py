@@ -189,7 +189,7 @@ class CommandPortOperator(bpy.types.Operator):
         except Empty:
             pass
         if self.timer is None:
-            self.timer = context.window_manager.event_timer_add(.01, context.window)
+            self.timer = context.window_manager.event_timer_add(.01, window=context.window)
         return {'PASS_THROUGH'}
 
     def modal(self, context, event):
@@ -240,32 +240,33 @@ def register(queue_size=0, timeout=.1, port=5000, buffersize=4096, max_connectio
     :param redirect_output: Indicates if output should be copied and sent
     :type redirect_output: bool
     """
-    Scene.bcp_queue_size = IntProperty(default=queue_size,
-                                       name="Queue size",
-                                       description="Size of commands queue: max number of commands that are qaiting "
-                                                   "to be executed. 0 == no limit", )
-    Scene.bcp_timeout = FloatProperty(default=timeout,
-                                      name="Timeout",
-                                      description="Maximum connection timeout, in seconds")
-    Scene.bcp_port = IntProperty(default=port,
-                                 name="Port",
-                                 description="Port for the socket")
-    Scene.bcp_buffersize = IntProperty(default=buffersize,
-                                       name="Buffersize",
-                                       description="Buffersize, in bytes, for socket")
-    Scene.bcp_max_connections = IntProperty(default=max_connections,
-                                            name="Max connections",
-                                            description="\"backlog\" parameter of socket \"listen\" method")
-    Scene.bcp_return_result = BoolProperty(default=return_result,
-                                           name="Return result",
-                                           description="Indicates if result of command should be returned")
-    Scene.bcp_result_as_json = BoolProperty(default=result_as_json,
-                                            name="Result as json",
-                                            description="Indicates if result of command should be returned as a "
-                                                        "json string")
-    Scene.bcp_redirect_output = BoolProperty(default=redirect_output,
-                                             name="Redirect output",
-                                             description="Indicates if output should be copied and sent")
+    Scene.bcp_queue_size: IntProperty() = IntProperty(default=queue_size,
+                                                      name="Queue size",
+                                                      description="Size of commands queue: max number of "
+                                                                  "commands that are qaiting to be executed. "
+                                                                  "0 == no limit", )
+    Scene.bcp_timeout: FloatProperty() = FloatProperty(default=timeout,
+                                                       name="Timeout",
+                                                       description="Maximum connection timeout, in seconds")
+    Scene.bcp_port: IntProperty = IntProperty(default=port,
+                                              name="Port",
+                                              description="Port for the socket")
+    Scene.bcp_buffersize: IntProperty = IntProperty(default=buffersize,
+                                                    name="Buffersize",
+                                                    description="Buffersize, in bytes, for socket")
+    Scene.bcp_max_connections: IntProperty = IntProperty(default=max_connections,
+                                                         name="Max connections",
+                                                         description="\"backlog\" parameter of socket \"listen\" method")
+    Scene.bcp_return_result: BoolProperty = BoolProperty(default=return_result,
+                                                         name="Return result",
+                                                         description="Indicates if result of command should be returned")
+    Scene.bcp_result_as_json: BoolProperty = BoolProperty(default=result_as_json,
+                                                          name="Result as json",
+                                                          description="Indicates if result of command should be "
+                                                                      "returned as a json string")
+    Scene.bcp_redirect_output: BoolProperty = BoolProperty(default=redirect_output,
+                                                           name="Redirect output",
+                                                           description="Indicates if output should be copied and sent")
     bpy.utils.register_class(CommandPortOperator)
 
 
