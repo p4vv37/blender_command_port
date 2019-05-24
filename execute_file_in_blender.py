@@ -1,5 +1,6 @@
 import socket
 import sys
+import os
 
 
 def send_command(command):
@@ -13,4 +14,13 @@ def send_command(command):
         print(res.decode())
     clientsocket.close()
 
-send_command("""exec(compile(open("{}", "rb").read(), filename, 'exec'), globals, locals)""".format(sys.argv[1]))
+
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        raise RuntimeError("Missing arguments.\n"
+                           "syntax: python execute_file_in_blender.py \"path\\to\\file.py\" port_number")
+    filepath = sys.argv[1]
+    filename = os.path.basename(filepath)
+    send_command("""exec(compile(open("{filepath}", "rb").read(), {filename}, 'exec'), globals, locals)""".format(
+        filename=filename, filepath=filepath
+    ))
