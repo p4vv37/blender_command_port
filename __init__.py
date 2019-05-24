@@ -40,7 +40,7 @@ class CloseCommandPortOperator(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class BlenderCommandPortPanel(Panel):
+class BLENDERCOMMANDPORT1_PT_Panel(Panel):
     bl_label = 'Blender Command Port'
     bl_space_type = 'PROPERTIES'
     bl_region_type = 'WINDOW'
@@ -73,12 +73,12 @@ def register():
     bpy.utils.register_class(OpenCommandPortOperator)
     bpy.utils.register_class(CloseCommandPortOperator)
     register_command_port()
-    bpy.utils.register_class(BlenderCommandPortPanel)
+    bpy.utils.register_class(BLENDERCOMMANDPORT1_PT_Panel)
 
 
 def unregister():
     bpy.utils.unregister_class(OpenCommandPortOperator)
     bpy.utils.unregister_class(CloseCommandPortOperator)
     unregister_command_port()
-    bpy.utils.unregister_class(BlenderCommandPortPanel)
+    bpy.utils.unregister_class(BLENDERCOMMANDPORT1_PT_Panel)
 
