@@ -1,3 +1,4 @@
+import os
 from collections import namedtuple
 from contextlib import AbstractContextManager
 import json
@@ -47,7 +48,7 @@ class CommandPort(threading.Thread):
     """ Command port runs on a separate thread """
 
     def __init__(self, queue_size=0, timeout=.1, port=5000, buffersize=4096, max_connections=5,
-                 return_result=False, result_as_json=False, redirect_output=False):
+                 return_result=False, result_as_json=False, redirect_output=False, share_environ=True):
         super(CommandPort, self).__init__()
 
         self.do_run = True
@@ -56,6 +57,7 @@ class CommandPort(threading.Thread):
         self.redirect_output = redirect_output
         self.buffersize = buffersize
         self.max_connections = max_connections
+        self.share_environ = share_environ
 
         self.commands_queue = Queue(queue_size)
         self.output_queue = Queue(queue_size)
@@ -131,7 +133,8 @@ class CommandPortOperator(bpy.types.Operator):
                                             max_connections=bpy.context.scene.bcp_max_connections,
                                             return_result=bpy.context.scene.bcp_return_result,
                                             result_as_json=bpy.context.scene.bcp_result_as_json,
-                                            redirect_output=bpy.context.scene.bcp_redirect_output)
+                                            redirect_output=bpy.context.scene.bcp_redirect_output,
+                                            share_environ=bpy.context.scene.bcp_share_environ)
         except AttributeError as e:
             try:
                 # ---- Make sure that properties are not missing and did not cause this exception
@@ -181,7 +184,7 @@ class CommandPortOperator(bpy.types.Operator):
                     else:
                         output = None
                     with OutputDuplicator(output_queue=output) as output_duplicator:
-                        exec(command, dict())
+                        exec(command, os.environ if self.command_port.share_environ else dict())
                     result = output_duplicator.last_line
                 except Exception as e:
                     result = '\n'.join([str(v) for v in e.args])
@@ -218,7 +221,7 @@ def open_command_port():
 
 
 def register(queue_size=0, timeout=.1, port=5000, buffersize=4096, max_connections=5,
-             return_result=True, result_as_json=False, redirect_output=True):
+             return_result=True, result_as_json=False, redirect_output=True, share_environ=True):
     """
     Registers properties. Values of those properties will be used as settings of the command port
     All properties have "bcp_" prefix, like Blender Command Port
@@ -239,6 +242,8 @@ def register(queue_size=0, timeout=.1, port=5000, buffersize=4096, max_connectio
     :type result_as_json: bool
     :param redirect_output: Indicates if output should be copied and sent
     :type redirect_output: bool
+    :param share_environ: Indicates if executed commands should operate on new dict instance, or os.environ of program
+    :type share_environ: bool
     """
     Scene.bcp_queue_size: IntProperty() = IntProperty(default=queue_size,
                                                       name="Queue size",
@@ -267,6 +272,16 @@ def register(queue_size=0, timeout=.1, port=5000, buffersize=4096, max_connectio
     Scene.bcp_redirect_output: BoolProperty = BoolProperty(default=redirect_output,
                                                            name="Redirect output",
                                                            description="Indicates if output should be copied and sent")
+    Scene.bcp_share_environ: BoolProperty = BoolProperty(default=share_environ,
+                                                         name="Share environment",
+                                                         description="Indicates if current environment should share an "
+                                                                     "application environment,\n"
+                                                                     "or a new, clean one should be created "
+                                                                     "for every executed command.\n"
+                                                                     "If environment is shared,  then every module "
+                                                                     "imported by command will be avaliable on "
+                                                                     "application level, \n "
+                                                                     "and forcommands executed later.")
     bpy.utils.register_class(CommandPortOperator)
 
 
@@ -279,6 +294,7 @@ def unregister():
     del Scene.bcp_return_result
     del Scene.bcp_result_as_json
     del Scene.bcp_redirect_output
+    del Scene.bcp_share_environ
     bpy.utils.register_class(CommandPortOperator)
 
 

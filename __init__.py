@@ -3,9 +3,9 @@ bl_info = {
     "description": "Command Port implementation for blender. "
                    "www.github.com/p4vv37/blender_command_port",
     "author": "Pawel Kowalski",
-    "version": (1, 0, 0),
+    "version": (1, 0, 1),
     "blender": (2, 80, 0),
-    "location": "Properties > Data > Blender Command Port",
+    "location": "User preferences > Blender Command Port",
     "support": "COMMUNITY",
     "wiki_url": "www.github.com/p4vv37/blender_command_port",
     "category": "Development",
@@ -42,8 +42,8 @@ class CloseCommandPortOperator(bpy.types.Operator):
 
 class BLENDERCOMMANDPORT1_PT_Panel(Panel):
     bl_label = 'Blender Command Port'
-    bl_space_type = 'PROPERTIES'
-    bl_region_type = 'WINDOW'
+    bl_space_type = 'USER_PREFERENCES'
+    bl_region_type = 'UI'
     bl_context = 'data'
 
     def draw(self, context):
@@ -57,6 +57,7 @@ class BLENDERCOMMANDPORT1_PT_Panel(Panel):
         layout.prop(scene, 'bcp_return_result')
         layout.prop(scene, 'bcp_result_as_json')
         layout.prop(scene, 'bcp_redirect_output')
+        layout.prop(scene, 'bcp_share_environ')
         row = layout.row()
         try:
             port_running = bpy.context.window_manager.keep_command_port_running
