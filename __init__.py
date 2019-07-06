@@ -43,7 +43,7 @@ class CloseCommandPortOperator(bpy.types.Operator):
 class BLENDERCOMMANDPORT1_PT_Panel(Panel):
     bl_label = 'Blender Command Port'
     bl_space_type = 'USER_PREFERENCES'
-    bl_region_type = 'UI'
+    bl_region_type = 'WINDOW'
     bl_context = 'data'
 
     def draw(self, context):

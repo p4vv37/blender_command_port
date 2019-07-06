@@ -146,6 +146,7 @@ class CommandPortOperator(bpy.types.Operator):
                 return_result = bpy.context.scene.bcp_return_result,
                 result_as_json = bpy.context.scene.bcp_result_as_json,
                 redirect_output = bpy.context.scene.bcp_redirect_output
+                bcp_share_environ = bpy.context.scene.bcp_share_environ
             except AttributeError:
                 # ---- properties are missing
                 raise AttributeError("Properties are not registered. "
