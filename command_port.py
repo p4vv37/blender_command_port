@@ -185,7 +185,12 @@ class CommandPortOperator(bpy.types.Operator):
                     else:
                         output = None
                     with OutputDuplicator(output_queue=output) as output_duplicator:
-                        exec(command, os.environ if self.command_port.share_environ else dict())
+                        if self.command_port.share_environ:
+                            _locals = dict()
+                            exec(command, globals(), _locals)
+                            globals().update(_locals)
+                        else:
+                            exec(command, _globals, {})
                     result = output_duplicator.last_line
                 except Exception as e:
                     result = '\n'.join([str(v) for v in e.args])
