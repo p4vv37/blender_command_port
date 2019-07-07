@@ -11,7 +11,13 @@ class TestCommandPort(TestCase):
     Port need to be opened in Blender with port 5000 on localhost and "Share environment" set to True.
     """
     def test_send_command(self):
-        send_command("""print("test passed")""", port=5000)
+        result = send_command("""print("TEST PASSED")""", port=5000)
+        self.assertTrue("TEST PASSED" in result)
+
+        for i in range(30):
+            send_command("""print("test passed")""", port=5000)
+        result = send_command("""print("TEST PASSED")""", port=5000)
+        self.assertTrue("TEST PASSED" in result)
 
     def test_execute_file(self):
         with NamedTemporaryFile(mode="w", suffix='.py', delete=True) as f:

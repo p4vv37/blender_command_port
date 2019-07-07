@@ -107,6 +107,7 @@ class CommandPort(threading.Thread):
                                     connection.sendall(output.encode())
                     else:
                         connection.sendall('OK'.encode())
+                    connection.shutdown(socket.SHUT_RDWR)
                     connection.close()
             except socket.timeout:
                 pass
@@ -190,7 +191,7 @@ class CommandPortOperator(bpy.types.Operator):
                             exec(command, globals(), _locals)
                             globals().update(_locals)
                         else:
-                            exec(command, _globals, {})
+                            exec(command, globals(), {})
                     result = output_duplicator.last_line
                 except Exception as e:
                     result = '\n'.join([str(v) for v in e.args])
