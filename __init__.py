@@ -42,7 +42,14 @@ class CloseCommandPortOperator(bpy.types.Operator):
 
 class BLENDERCOMMANDPORT1_PT_Panel(Panel):
     bl_label = 'Blender Command Port'
-    bl_space_type = 'USER_PREFERENCES'
+
+    # 2.8 uses PREFERENCES, 2.7 uses USER_PREFERENCES, detect:
+    try:
+        bpy.types.SpacePreferences
+        bl_space_type = 'PREFERENCES'
+    except AttributeError:
+        bl_space_type = 'USER_PREFERENCES'
+
     bl_region_type = 'WINDOW'
     bl_context = 'data'
 
