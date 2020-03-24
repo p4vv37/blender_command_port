@@ -1,8 +1,10 @@
 bl_info = {
     "name": "Blender Command Port",
     "description": "Command Port implementation for blender. "
-                   "www.github.com/p4vv37/blender_command_port",
+                   "www.github.com/p4vv37/blender_command_port"
+                   "www.github.com/jeffhanna/blender_command_port",
     "author": "Pawel Kowalski",
+    "author": "Jeff Hanna"
     "version": (1, 0, 1),
     "blender": (2, 80, 0),
     "location": "User preferences > Blender Command Port",
@@ -43,15 +45,12 @@ class CloseCommandPortOperator(bpy.types.Operator):
 class BLENDERCOMMANDPORT1_PT_Panel(Panel):
     bl_label = 'Blender Command Port'
 
-    # 2.8 uses PREFERENCES and system, 2.7 uses USER_PREFERENCES and data, detect:
-    try:
-        bpy.types.SpacePreferences
-        bl_space_type = 'PREFERENCES'
-        bl_context = 'system'
-    except AttributeError:
-        bl_space_type = 'USER_PREFERENCES'
-        bl_context = 'data'
-
+    # 2.8 uses PREFERENCES and system. There is no need to attempt to context
+    # switch between Blender 2.7 and 2.8 here as the 'blender' version metadata 
+    # at the top of this file limits it to Blender 2.80 or later.
+    
+    bl_space_type = 'PREFERENCES'
+    bl_context = 'system'
     bl_region_type = 'WINDOW'
 
     def draw(self, context):
