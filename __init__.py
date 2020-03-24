@@ -43,15 +43,16 @@ class CloseCommandPortOperator(bpy.types.Operator):
 class BLENDERCOMMANDPORT1_PT_Panel(Panel):
     bl_label = 'Blender Command Port'
 
-    # 2.8 uses PREFERENCES, 2.7 uses USER_PREFERENCES, detect:
+    # 2.8 uses PREFERENCES and system, 2.7 uses USER_PREFERENCES and data, detect:
     try:
         bpy.types.SpacePreferences
         bl_space_type = 'PREFERENCES'
+        bl_context = 'system'
     except AttributeError:
         bl_space_type = 'USER_PREFERENCES'
+        bl_context = 'data'
 
     bl_region_type = 'WINDOW'
-    bl_context = 'data'
 
     def draw(self, context):
         layout = self.layout
