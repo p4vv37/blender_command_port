@@ -10,6 +10,7 @@ def send_command(command, host='localhost', port=None):
         port = sys.argv[2]
 
     clientsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    e = Exception
     for i in range(3):
         # Retry 3 times, wait from 0 to .5 s. before retries, raise last Exception, if no success
         # noinspection PyBroadException
@@ -40,9 +41,9 @@ def execute_file(path, host='localhost', port=None):
 
     filename = os.path.basename(path)
     result = send_command(
-        """exec(compile(open("{filepath}", "rb").read(), "{filename}", 'exec'), globals(), locals())"""
-            .format(filename=filename, filepath=path),
-        host=host, port=port)
+        """exec(compile(open(R"{filepath}").read(), "{filename}", "exec"), globals(), locals())""".format(filename=filename, filepath=path),
+        host=host,
+        port=port)
     return result
 
 

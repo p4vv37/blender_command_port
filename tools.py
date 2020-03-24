@@ -4,8 +4,8 @@ import bpy
 
 def queue_command(command, buffersize=None, port=None):
     """
-    Add a command to commands queue of the command port. 
-    This function can be used like executeDeferred in Maya: 
+    Add a command to commands queue of the command port.
+    This function can be used like executeDeferred in Maya:
     * to run commands later, after current task or
     * to send command from a thread and evaluate in in the main thread of application safely.
 
@@ -24,9 +24,9 @@ def queue_command(command, buffersize=None, port=None):
     soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     soc.connect(("127.0.0.1", port))
 
-    soc.send(command.encode("utf8"))
+    soc.send(command.encode("ascii"))
     result_bytes = soc.recv(buffersize)
-    result_string = result_bytes.decode("utf8")
+    result_string = result_bytes.decode("ascii")
 
     print("Result from server is {}".format(result_string))
 
