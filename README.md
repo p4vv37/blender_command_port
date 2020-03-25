@@ -39,11 +39,41 @@ j
 """)
 ```
 
+#VS Code Integration
+The following json code can be pasted into a task.json file to add an 'Execute Script in Blender' task to VS Code.
+```
+{
+	// See https://go.microsoft.com/fwlink/?LinkId=733558
+	// for the documentation about the tasks.json format
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Execute Script in Blender",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"${env:APPDATA}/Blender Foundation/Blender/2.82/scripts/addons/blender_command_port/execute_file_in_blender.py",
+				"${file}",
+				"5000"
+			],
+			"presentation": {
+				"reveal": "always",
+				"panel": "new"
+			},
+			"problemMatcher": []
+		}
+	]
+}
+```
+
+## PyCharm Integration
 Another way is to use execute_file_in_blender.py script to create a run configuration in PyCharm that executes a file in Blender. Path to a file must be passed as a first script parameter, port need to be passed as a second one.
 ![PyCharm configuration](img/pycharm.png?raw=true "Title")
+
 ## Authors
 
 * **Paweł Kowalski** - [pkowalski.com](http://pkowalski.com)
+* **Jeff Hanna** - [github/jeffhanna](https://github.com/jeffhanna)
 
 ## License
 
