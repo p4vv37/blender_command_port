@@ -39,7 +39,7 @@ j
 """)
 ```
 
-#VS Code Integration
+### Visual Studio Code Integration
 The following json code can be pasted into a task.json file to add an 'Execute Script in Blender' task to VS Code.
 ```
 {
@@ -66,7 +66,7 @@ The following json code can be pasted into a task.json file to add an 'Execute S
 }
 ```
 
-## PyCharm Integration
+### PyCharm Integration
 Another way is to use execute_file_in_blender.py script to create a run configuration in PyCharm that executes a file in Blender. Path to a file must be passed as a first script parameter, port need to be passed as a second one.
 ![PyCharm configuration](img/pycharm.png?raw=true "Title")
 
