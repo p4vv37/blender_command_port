@@ -302,7 +302,7 @@ def unregister():
     del Scene.bcp_result_as_json
     del Scene.bcp_redirect_output
     del Scene.bcp_share_environ
-    bpy.utils.register_class(CommandPortOperator)
+    bpy.utils.unregister_class(CommandPortOperator)
 
 
 if __name__ == "__main__":
