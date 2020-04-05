@@ -1,5 +1,6 @@
 import socket
 import bpy
+from command_port import CommandPortOperator
 
 
 def queue_command(command, buffersize=None, port=None):
@@ -17,9 +18,9 @@ def queue_command(command, buffersize=None, port=None):
     :type port: int
     """
     if port is None:
-        port = bpy.Scene.bcp_port
+        port = bpy.context.window_manager.bcp_port
     if buffersize is None:
-        buffersize = bpy.Scene.bcp_buffersize
+        buffersize = bpy.context.window_manager.bcp_buffersize
 
     soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     soc.connect(("127.0.0.1", port))
@@ -29,16 +30,3 @@ def queue_command(command, buffersize=None, port=None):
     result_string = result_bytes.decode("ascii")
 
     print("Result from server is {}".format(result_string))
-
-
-def close_command_port():
-    try:
-        if not bpy.context.window_manager.keep_command_port_running:
-            print("Port is not running")
-            return False
-        bpy.context.window_manager.keep_command_port_running = False
-        print("Command port closed")
-        return True
-    except NameError:
-        print("Port is not running. It was never initialized.")
-        return False

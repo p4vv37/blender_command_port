@@ -1,20 +1,23 @@
-import os
 from collections import namedtuple
 from contextlib import AbstractContextManager
 import json
 import socket
-import sys
 import threading
 from queue import Queue, Empty
 
 import bpy
-from bpy.types import Scene
 from bpy.props import BoolProperty
 from bpy.props import FloatProperty
 from bpy.props import IntProperty
 
 # --- Stores result of command. Created to make easier detecting result from lines of stdout
 ResultContainer = namedtuple("ResultContainer", ["value"])
+COMMAND_PORT = None
+
+import sys
+sys.path.append(r"/home/pawel/git/tmp2")
+import pydevd_pycharm
+pydevd_pycharm.settrace('localhost', port=6666, stdoutToServer=True, stderrToServer=True)
 
 
 class OutputDuplicator(AbstractContextManager):
@@ -122,47 +125,51 @@ class CommandPortOperator(bpy.types.Operator):
     bl_idname = "object.command_port"
     bl_label = "Blender Command Port"
     timer = None
+    instance = None
+    keep_command_port_running = False
 
     # noinspection PyUnusedLocal
     def __init__(self):
         super(CommandPortOperator, self).__init__()
         try:
-            self.command_port = CommandPort(queue_size=bpy.context.scene.bcp_queue_size,
-                                            timeout=bpy.context.scene.bcp_timeout,
-                                            port=bpy.context.scene.bcp_port,
-                                            buffersize=bpy.context.scene.bcp_buffersize,
-                                            max_connections=bpy.context.scene.bcp_max_connections,
-                                            return_result=bpy.context.scene.bcp_return_result,
-                                            result_as_json=bpy.context.scene.bcp_result_as_json,
-                                            redirect_output=bpy.context.scene.bcp_redirect_output,
-                                            share_environ=bpy.context.scene.bcp_share_environ)
+            try:
+                if not CommandPortOperator.instance.is_alive():
+                    raise AttributeError  # Hacky, but works
+                self.command_port = CommandPortOperator.instance
+            except AttributeError:
+                self.command_port = CommandPort(queue_size=bpy.context.window_manager.bcp_queue_size,
+                                                timeout=bpy.context.window_manager.bcp_timeout,
+                                                port=bpy.context.window_manager.bcp_port,
+                                                buffersize=bpy.context.window_manager.bcp_buffersize,
+                                                max_connections=bpy.context.window_manager.bcp_max_connections,
+                                                return_result=bpy.context.window_manager.bcp_return_result,
+                                                result_as_json=bpy.context.window_manager.bcp_result_as_json,
+                                                redirect_output=bpy.context.window_manager.bcp_redirect_output,
+                                                share_environ=bpy.context.window_manager.bcp_share_environ)
+                CommandPortOperator.instance = self.command_port
+                self.command_port.start()
         except AttributeError as e:
             try:
                 # ---- Make sure that properties are not missing and did not cause this exception
-                queue_size = bpy.context.scene.bcp_queue_size,
-                timeout = bpy.context.scene.bcp_timeout,
-                port = bpy.context.scene.bcp_port,
-                buffersize = bpy.context.scene.bcp_buffersize,
-                max_connections = bpy.context.scene.bcp_max_connections,
-                return_result = bpy.context.scene.bcp_return_result,
-                result_as_json = bpy.context.scene.bcp_result_as_json,
-                redirect_output = bpy.context.scene.bcp_redirect_output
-                bcp_share_environ = bpy.context.scene.bcp_share_environ
+                queue_size = bpy.context.window_manager.bcp_queue_size,
+                timeout = bpy.context.window_manager.bcp_timeout,
+                port = bpy.context.window_manager.bcp_port,
+                buffersize = bpy.context.window_manager.bcp_buffersize,
+                max_connections = bpy.context.window_manager.bcp_max_connections,
+                return_result = bpy.context.window_manager.bcp_return_result,
+                result_as_json = bpy.context.window_manager.bcp_result_as_json,
+                redirect_output = bpy.context.window_manager.bcp_redirect_output
+                bcp_share_environ = bpy.context.window_manager.bcp_share_environ
             except AttributeError:
                 # ---- properties are missing
                 raise AttributeError("Properties are not registered. "
                                      "Run 'register_properties' function before opening the port")
             # ---- If properties are working, then re-raise an exception
             raise e
-        self.command_port.start()
         print("Command port opened")
 
-    def __del__(self):
-        self.close_port()
-        del bpy.context.window_manager.keep_command_port_running
-
     def check_property(self):
-        if not bpy.context.window_manager.keep_command_port_running:
+        if not CommandPortOperator.keep_command_port_running:
             self.close_port()
 
     def close_port(self):
@@ -170,12 +177,12 @@ class CommandPortOperator(bpy.types.Operator):
             bpy.context.window_manager.event_timer_remove(self.timer)
         print("Waiting for command port thread to end....")
         self.command_port.do_run = False
-        while self.command_port.isAlive():
+        while self.command_port.is_alive():
             pass
         print("Command port thread was stopped.")
 
     def execute(self, context):
-        if not self.command_port.isAlive():
+        if not self.command_port.is_alive():
             return {'FINISHED'}
         try:
             command = self.command_port.commands_queue.get_nowait()
@@ -210,21 +217,17 @@ class CommandPortOperator(bpy.types.Operator):
 
     def invoke(self, context, event):
         try:
-            bpy.context.window_manager.keep_command_port_running = True
+            CommandPortOperator.keep_command_port_running = True
         except AttributeError:
             # --- Registering it here, because it has to run "check_property method
             bpy.types.WindowManager.keep_command_port_running = bpy.props.BoolProperty(
                 name="My Property",
                 update=lambda o, c: self.check_property()
             )
-            bpy.context.window_manager.keep_command_port_running = True
+            CommandPortOperator.keep_command_port_running = True
         self.execute(context)
         context.window_manager.modal_handler_add(self)
         return {'RUNNING_MODAL'}
-
-
-def open_command_port():
-    bpy.ops.object.command_port('INVOKE_DEFAULT')
 
 
 def register(queue_size=0, timeout=.1, port=5000, buffersize=4096, max_connections=5,
@@ -252,34 +255,34 @@ def register(queue_size=0, timeout=.1, port=5000, buffersize=4096, max_connectio
     :param share_environ: Indicates if executed commands should operate on new dict instance, or os.environ of program
     :type share_environ: bool
     """
-    Scene.bcp_queue_size: IntProperty() = IntProperty(default=queue_size,
+    bpy.types.WindowManager.bcp_queue_size: IntProperty() = IntProperty(default=queue_size,
                                                       name="Queue size",
                                                       description="Size of commands queue: max number of "
                                                                   "commands that are qaiting to be executed. "
                                                                   "0 == no limit", )
-    Scene.bcp_timeout: FloatProperty() = FloatProperty(default=timeout,
+    bpy.types.WindowManager.bcp_timeout: FloatProperty() = FloatProperty(default=timeout,
                                                        name="Timeout",
                                                        description="Maximum connection timeout, in seconds")
-    Scene.bcp_port: IntProperty = IntProperty(default=port,
+    bpy.types.WindowManager.bcp_port: IntProperty = IntProperty(default=port,
                                               name="Port",
                                               description="Port for the socket")
-    Scene.bcp_buffersize: IntProperty = IntProperty(default=buffersize,
+    bpy.types.WindowManager.bcp_buffersize: IntProperty = IntProperty(default=buffersize,
                                                     name="Buffersize",
                                                     description="Buffersize, in bytes, for socket")
-    Scene.bcp_max_connections: IntProperty = IntProperty(default=max_connections,
+    bpy.types.WindowManager.bcp_max_connections: IntProperty = IntProperty(default=max_connections,
                                                          name="Max connections",
                                                          description="\"backlog\" parameter of socket \"listen\" method")
-    Scene.bcp_return_result: BoolProperty = BoolProperty(default=return_result,
+    bpy.types.WindowManager.bcp_return_result: BoolProperty = BoolProperty(default=return_result,
                                                          name="Return result",
                                                          description="Indicates if result of command should be returned")
-    Scene.bcp_result_as_json: BoolProperty = BoolProperty(default=result_as_json,
+    bpy.types.WindowManager.bcp_result_as_json: BoolProperty = BoolProperty(default=result_as_json,
                                                           name="Result as json",
                                                           description="Indicates if result of command should be "
                                                                       "returned as a json string")
-    Scene.bcp_redirect_output: BoolProperty = BoolProperty(default=redirect_output,
+    bpy.types.WindowManager.bcp_redirect_output: BoolProperty = BoolProperty(default=redirect_output,
                                                            name="Redirect output",
                                                            description="Indicates if output should be copied and sent")
-    Scene.bcp_share_environ: BoolProperty = BoolProperty(default=share_environ,
+    bpy.types.WindowManager.bcp_share_environ: BoolProperty = BoolProperty(default=share_environ,
                                                          name="Share environment",
                                                          description="Indicates if current environment should share an "
                                                                      "application environment,\n"
@@ -291,17 +294,16 @@ def register(queue_size=0, timeout=.1, port=5000, buffersize=4096, max_connectio
                                                                      "and forcommands executed later.")
     bpy.utils.register_class(CommandPortOperator)
 
-
 def unregister():
-    del Scene.bcp_queue_size
-    del Scene.bcp_timeout
-    del Scene.bcp_port
-    del Scene.bcp_buffersize
-    del Scene.bcp_max_connections
-    del Scene.bcp_return_result
-    del Scene.bcp_result_as_json
-    del Scene.bcp_redirect_output
-    del Scene.bcp_share_environ
+    del bpy.types.WindowManager.bcp_queue_size
+    del bpy.types.WindowManager.bcp_timeout
+    del bpy.types.WindowManager.bcp_port
+    del bpy.types.WindowManager.bcp_buffersize
+    del bpy.types.WindowManager.bcp_max_connections
+    del bpy.types.WindowManager.bcp_return_result
+    del bpy.types.WindowManager.bcp_result_as_json
+    del bpy.types.WindowManager.bcp_redirect_output
+    del bpy.types.WindowManager.bcp_share_environ
     bpy.utils.unregister_class(CommandPortOperator)
 
 

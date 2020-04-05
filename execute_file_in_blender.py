@@ -10,7 +10,7 @@ def send_command(command, host='localhost', port=None):
         port = sys.argv[2]
 
     clientsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    e = Exception
+    e = ConnectionError("Max retries reached!")
     for i in range(3):
         # Retry 3 times, wait from 0 to .5 s. before retries, raise last Exception, if no success
         # noinspection PyBroadException

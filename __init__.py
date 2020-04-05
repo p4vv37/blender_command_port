@@ -17,8 +17,7 @@ from bpy.types import Panel
 
 from .command_port import register as register_command_port
 from .command_port import unregister as unregister_command_port
-from .command_port import open_command_port
-from .tools import close_command_port
+from .command_port import CommandPortOperator
 
 
 class OpenCommandPortOperator(bpy.types.Operator):
@@ -27,7 +26,7 @@ class OpenCommandPortOperator(bpy.types.Operator):
 
     # noinspection PyMethodMayBeStatic,PyUnusedLocal
     def execute(self, context):
-        open_command_port()
+        bpy.ops.object.command_port('INVOKE_DEFAULT')
         return {'FINISHED'}
 
 
@@ -37,7 +36,14 @@ class CloseCommandPortOperator(bpy.types.Operator):
 
     # noinspection PyMethodMayBeStatic
     def execute(self, context):
-        close_command_port()
+        try:
+            if not CommandPortOperator.instance.is_alive():
+                print("Port is not running")
+                return False
+            CommandPortOperator.instance.do_run = False
+            print("Command port closed")
+        except NameError:
+            print("Port is not running. It was never initialized.")
         return {'FINISHED'}
 
 
@@ -54,19 +60,19 @@ class BLENDERCOMMANDPORT1_PT_Panel(Panel):
 
     def draw(self, context):
         layout = self.layout
-        scene = context.scene
-        layout.prop(scene, 'bcp_queue_size')
-        layout.prop(scene, 'bcp_timeout')
-        layout.prop(scene, 'bcp_port')
-        layout.prop(scene, 'bcp_buffersize')
-        layout.prop(scene, 'bcp_max_connections')
-        layout.prop(scene, 'bcp_return_result')
-        layout.prop(scene, 'bcp_result_as_json')
-        layout.prop(scene, 'bcp_redirect_output')
-        layout.prop(scene, 'bcp_share_environ')
+        window_manager = context.window_manager
+        layout.prop(window_manager, 'bcp_queue_size')
+        layout.prop(window_manager, 'bcp_timeout')
+        layout.prop(window_manager, 'bcp_port')
+        layout.prop(window_manager, 'bcp_buffersize')
+        layout.prop(window_manager, 'bcp_max_connections')
+        layout.prop(window_manager, 'bcp_return_result')
+        layout.prop(window_manager, 'bcp_result_as_json')
+        layout.prop(window_manager, 'bcp_redirect_output')
+        layout.prop(window_manager, 'bcp_share_environ')
         row = layout.row()
         try:
-            port_running = bpy.context.window_manager.keep_command_port_running
+            port_running = CommandPortOperator.instance.is_alive()
         except AttributeError:
             port_running = False
 
