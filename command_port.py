@@ -18,8 +18,8 @@ ResultContainer = namedtuple("ResultContainer", ["value"])
 
 
 class OutputDuplicator(AbstractContextManager):
-    """ 
-    Context manager that can copy the output from stdout and send it to a queue that was passed to it. 
+    """
+    Context manager that can copy the output from stdout and send it to a queue that was passed to it.
     """
 
     def __init__(self, output_queue=None):
@@ -232,17 +232,17 @@ def register(queue_size=0, timeout=.1, port=5000, buffersize=4096, max_connectio
     """
     Registers properties. Values of those properties will be used as settings of the command port
     All properties have "bcp_" prefix, like Blender Command Port
-    
+
     :param queue_size: Size of commands queue: max number of commands that are waiting to be executed. 0 == no limit
-    :type queue_size: int 
+    :type queue_size: int
     :param timeout: Maximum connection timeout, in seconds
     :type timeout: float
     :param port: Port for the socket
     :type port: int
     :param buffersize: Buffersize, in bytes, for socket
-    :type buffersize: int 
+    :type buffersize: int
     :param max_connections: "backlog" parameter of socket "listen" method
-    :type max_connections: int 
+    :type max_connections: int
     :param return_result: Indicates if result of command should be returned
     :type return_result: bool
     :param result_as_json: Indicates if result of command should be returned as a json string
