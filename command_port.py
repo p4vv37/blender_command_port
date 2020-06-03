@@ -16,9 +16,11 @@ COMMAND_PORT = None
 
 import sys
 sys.path.append(r"/home/pawel/git/tmp2")
-import pydevd_pycharm
-pydevd_pycharm.settrace('localhost', port=6666, stdoutToServer=True, stderrToServer=True)
 
+try:
+    import pydevd_pycharm
+    pydevd_pycharm.settrace('localhost', port=6666, stdoutToServer=True, stderrToServer=True)
+except: pass
 
 class OutputDuplicator(AbstractContextManager):
     """
