@@ -4,7 +4,7 @@ bl_info = {
                    "www.github.com/p4vv37/blender_command_port"
                    "www.github.com/jeffhanna/blender_command_port",
     "author": "Pawel Kowalski, Jeff Hannna",
-    "version": (1, 1, 2),
+    "version": (1, 2, 1),
     "blender": (2, 80, 0),
     "location": "User preferences > Blender Command Port",
     "support": "COMMUNITY",
