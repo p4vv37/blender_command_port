@@ -10,6 +10,8 @@ from bpy.props import BoolProperty
 from bpy.props import FloatProperty
 from bpy.props import IntProperty
 
+import warnings
+
 # --- Stores result of command. Created to make easier detecting result from lines of stdout
 ResultContainer = namedtuple("ResultContainer", ["value"])
 COMMAND_PORT = None
@@ -20,7 +22,8 @@ sys.path.append(r"/home/pawel/git/tmp2")
 try:
     import pydevd_pycharm
     pydevd_pycharm.settrace('localhost', port=6666, stdoutToServer=True, stderrToServer=True)
-except: pass
+except ModuleNotFoundError:
+    warnings.warn("Module 'pydevd_pycharm' not found, skipping pydevd_pycharm.settrace")
 
 class OutputDuplicator(AbstractContextManager):
     """
