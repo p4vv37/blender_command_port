@@ -4,6 +4,7 @@ import json
 import socket
 import threading
 from queue import Queue, Empty
+import sys
 
 import bpy
 from bpy.props import BoolProperty
