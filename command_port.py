@@ -82,7 +82,7 @@ class CommandPort(threading.Thread):
         # So I'm detecting if a main thread of blender did finish working.
         # If it did, then I'm breaking the loop and closing the port.
         threads = threading.enumerate()
-        while any([t.name == "MainThread" and t.isAlive() for t in threads]):
+        while any([t.name == "MainThread" and t.is_alive() for t in threads]):
             if not self.do_run:
                 # ---- Break also if user requested closing the port.
                 print("do_run is False")
