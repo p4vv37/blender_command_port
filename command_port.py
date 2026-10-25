@@ -127,8 +127,8 @@ class CommandPortOperator(bpy.types.Operator):
     keep_command_port_running = False
 
     # noinspection PyUnusedLocal
-    def __init__(self):
-        super(CommandPortOperator, self).__init__()
+    def __init__(self, *args, **kwargs):
+        super(CommandPortOperator, self).__init__(*args, **kwargs)
         try:
             try:
                 if not CommandPortOperator.instance.is_alive():
